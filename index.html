@@ -74,11 +74,7 @@
          });
 
          personal[0]=tempTable;
-
-
     });
-
-
 
      d3.csv("五险费率.csv",function (error1,csv) {
 
@@ -262,7 +258,6 @@
                 console.log(salary[0].本市职工月平均工资);
             }
         }
-
         d3.csv("绩效工资标准.csv", function (error4, csvdataStandard) {
             if (error4) {
                 console.log(error4);
@@ -330,10 +325,8 @@
                 }
 
                 addPosition.appendChild(table);
-
             }
     }
-
     function changeValue(name) {
       alert(name);
       for(var i=0;i<personList.length;i++){
@@ -361,10 +354,7 @@
               break;
           }
       }
-
     }
-
-
 </script>
 </body>
 </html>
