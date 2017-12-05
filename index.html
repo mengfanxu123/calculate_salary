@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />-->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="http://cdn.static.runoob.com/libs/angular.js/1.4.6/angular.min.js"></script>
+</head>
+<body>
+    <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+    <script src="./papaparse.min.js"></script>
+    <script src="./jquery-3.2.1.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+<h1>Welcome to calculator</h1>
+
+<div id="h1">
+
+</div>
+
+<div id="showInsurance"></div>
+<div id="wrap" ng-app="myApp" ng-controller="showItem">
+    <h2>you can change  information </h2>
+
+</div>
+
+<button onclick="calAllIncome()">show information</button>
+
+
+<script type="text/javascript">
+    //initial array
+    var ul=new Array("个税税率.csv","五险费率.csv","员工名单.csv","本市职工月平均工资.csv","绩效工资标准.csv");
+    personal=new Array();
+    insurance=new Array();
+    personList=new Array();
+    monSalary=new Array();
+    standardSalary=new Array();
+     //use d3 load csv file
+     d3.csv("个税税率.csv",function(error,csvdata){
+        if(error){
+            console.log(error);
+        }
+        var tempTable=[];
+         tempTable.push({
+             amount: 0,
+             rate: csvdata[0][0]
+         });
+         tempTable.push({
+             amount: 1500,
+             rate: csvdata[0][1500]
+         });
+         tempTable.push({
+             amount: 4500,
+             rate: csvdata[0][4500]
+         });
+         tempTable.push({
+             amount: 9000,
+             rate: csvdata[0][9000]
+         });
+         tempTable.push({
+             amount: 35000,
+             rate: csvdata[0][35000]
+         });
+
+         tempTable.push({
+             amount: 55000,
+             rate: csvdata[0][55000]
+         });
+         tempTable.push({
+             amount: 80000,
+             rate: csvdata[0][80000]
+         });
+
+         personal[0]=tempTable;
+
+
+    });
+
+
+
+     d3.csv("五险费率.csv",function (error1,csv) {
+
+         if(error1){
+             console.log(error1);
+         }
+         for(var j=0;j<csv.length; j++){
+             var se ={
+                "类型":csv[j].类型,
+                 "养老保险":csv[j].养老保险,
+                 "医疗保险":csv[j].医疗保险,
+                 "失业保险":csv[j].失业保险,
+                 "生育保险":csv[j].生育保险,
+                 "工伤保险":csv[j].工伤保险,
+             }
+             insurance[j]=se;
+         }
+     });
+     function test() {
+         console.log(insurance);
+         console.log(insurance[1].生育保险);
+
+     }
+     //calculate 5 insurances
+    function calInsurance(salary,liveStandard) {
+         var insuranceRes={
+             individual:{
+                 "养老保险":null,
+                 "医疗保险":null,
+                 "失业保险":null,
+                 "生育保险":null,
+                 "工伤保险":null,
+                 "公积金":null,
+                 "total":null,
+             },
+             company:{
+                 "养老保险":null,
+                 "医疗保险":null,
+                 "失业保险":null,
+                 "生育保险":null,
+                 "工伤保险":null,
+                 "公积金":null,
+                 "total":null,
+             }
+         }
+         //individual
+         insuranceRes.individual.养老保险=salary*insurance[1].养老保险;
+         insuranceRes.individual.生育保险=salary*insurance[1].生育保险;
+         insuranceRes.individual.工伤保险=salary*insurance[1].工伤保险;
+         insuranceRes.individual.失业保险=salary*insurance[1].失业保险;
+         insuranceRes.individual.医疗保险=salary*insurance[1].医疗保险;
+        //company
+         insuranceRes.company.养老保险=salary*insurance[0].养老保险;
+         insuranceRes.company.生育保险=salary*insurance[0].生育保险;
+         insuranceRes.company.工伤保险=salary*insurance[0].工伤保险;
+         insuranceRes.company.失业保险=salary*insurance[0].失业保险;
+         insuranceRes.company.医疗保险=salary*insurance[0].医疗保险;
+
+         insuranceRes.individual.公积金=salary*liveStandard;
+         insuranceRes.company.公积金=salary*liveStandard;
+         insuranceRes.individual.total=insuranceRes.individual.养老保险+insuranceRes.individual.生育保险+ insuranceRes.individual.工伤保险+insuranceRes.individual.失业保险+ insuranceRes.individual.医疗保险+insuranceRes.individual.公积金;
+         insuranceRes.company.total=parseFloat(insuranceRes.company.养老保险)+parseFloat(insuranceRes.company.生育保险)+parseFloat(insuranceRes.company.工伤保险)+parseFloat(insuranceRes.company.失业保险)+parseFloat(insuranceRes.company.医疗保险) +parseFloat(insuranceRes.company.公积金);
+         return insuranceRes;
+    }
+
+    function show5Insurance() {
+        for (var i = 0; i < personList.length; i++) {
+            if (personList[i].基本工资 > monSalary[0].本市职工月平均工资 * 3)
+                calInsurance(monSalary[0].本市职工月平均工资 * 3, personList[i].公积金);
+            else if (personList[i].基本工资 < 0.6 * monSalary[0].本市职工月平均工资)
+                personList[i].insurances5and1 = calInsurance(0.6 * monSalary[0].本市职工月平均工资, personList[i].公积金);
+            else {
+                personList[i].insurances5and1 = calInsurance(personList[i].基本工资, personList[i].公积金);
+            }
+        }
+    }
+        //calculate income
+        function income(person) {
+            person.绩效奖励 = calperformance(person.绩效评分);
+            if (person.基本工资 > monSalary[0].本市职工月平均工资 * 3)
+                person.insurances5and1 = calInsurance(monSalary[0].本市职工月平均工资 * 3, person.公积金);
+            else if (person.基本工资 < 0.6 * monSalary[0].本市职工月平均工资)
+                person.insurances5and1 = calInsurance(0.6 * monSalary[0].本市职工月平均工资, person.公积金);
+            else {
+                person.insurances5and1 = calInsurance(person.基本工资, person.公积金);
+            }
+                person.incomeBeforeTax = parseFloat(person.基本工资) + parseFloat(person.绩效奖励) - parseFloat(person.insurances5and1.individual.total);
+                person.tax = calTax(person.基本工资 - person.insurances5and1.individual.total + parseFloat(person.绩效奖励));
+                person.incomeAfterTax = person.incomeBeforeTax - person.tax;
+        }
+
+        function calAllIncome(){
+            for (var i = 0; i < personList.length; i++) {
+                income(personList[i]);
+                console.log(personList[i]);
+//             console.log(personList[i].insurances5and1);
+                console.log(personList[i].姓名);
+                //show in web page
+                var title = document.createElement('ul');
+                title.innerHTML += "<li>"+"name:"+personList[i].姓名+"<input disabled type='text' name='name' id='name"+i+"'value='"+personList[i].姓名+"'>"+"</li>";
+                title.innerHTML += "<li>"+"standard salary:"+personList[i].基本工资+"<input type='text' name='salary'id='salary"+i+"'>"+"</li>";
+                title.innerHTML += "<li>"+"performance score:"+personList[i].绩效评分+"<input type='text' name='per' id='performance"+i+"'>"+"</li>";
+                title.innerHTML += "<li>"+"accumulation fund:"+personList[i].公积金+"<input type='text' name='fund'id='fund"+i+"'>"+"</li>";
+                title.innerHTML += "<li>"+"perforance bonus:"+personList[i].绩效奖励+"</li>";
+                title.innerHTML += "<li>"+"5 insurances and fund: individual "+"养老保险:"+personList[i].insurances5and1.individual.养老保险+""+"医疗保:"+personList[i].insurances5and1.individual.医疗保险+""+"失业保险:"+personList[i].insurances5and1.individual.失业保险+""+"生育保险:"+personList[i].insurances5and1.individual.生育保险+""+"工伤保险:"+personList[i].insurances5and1.individual.工伤保险+""+"公积金:"+personList[i].insurances5and1.individual.公积金+""+"total:"+personList[i].insurances5and1.individual.total+"</li>";
+                title.innerHTML += "<li>"+"5 insurances and fund: company "+"养老保险:"+personList[i].insurances5and1.company.养老保险+""+"医疗保:"+personList[i].insurances5and1.company.医疗保险+""+"失业保险:"+personList[i].insurances5and1.company.失业保险+""+"生育保险:"+personList[i].insurances5and1.company.生育保险+""+"工伤保险:"+personList[i].insurances5and1.company.工伤保险+""+"公积金:"+personList[i].insurances5and1.company.公积金+""+"total:"+personList[i].insurances5and1.company.total+"</li>";
+                title.innerHTML += "<li>"+"tax:"+personList[i].tax+"</li>";
+                title.innerHTML += "<li>"+"income before tax:"+personList[i].incomeBeforeTax+"</li>";
+                title.innerHTML += "<li>"+"income after tax:"+personList[i].incomeAfterTax+"</li>";
+                console.log(personList[i].insurances5and1.individual.养老保险);
+                var insurance5Table = document.createElement('table');
+                insurance5Table.setAttribute("class", "insurance5Tabl");
+                var addPosition = document.getElementById('showInsurance');
+                insurance5Table.innerHTML+="<tr>"+"<th>"+""
+                //create button
+                var buttonnode=document.createElement("button");
+                buttonnode.innerHTML+="Change value";
+                var functionn="changeValue(\""+personList[i].姓名+"\")";
+                buttonnode.setAttribute("onclick",functionn);
+                title.appendChild(buttonnode);
+                addPosition.appendChild(title)
+//                addPosition.appendChild(insurance5Table);
+            }
+        }
+
+        //calculate tax
+        function calTax(salaryAfterInsurance) {
+            var remain = salaryAfterInsurance - 3500;
+
+            if (remain < 0) {
+                return 0;
+            } else {
+                var res = 0;
+                for (var i = personal[0].length - 1; i >= 0; i--) {
+                    console.log(personal[0][i].amount);
+                    console.log(personal[0][i].rate);
+                    if (remain < personal[0][i].amount) continue;
+                    console.log(remain - personal[0][i].amount);
+                    res += (remain - personal[0][i].amount) * personal[0][i].rate;
+                    remain = (parseFloat(personal[0][i].amount));
+                }
+                return res;
+            }
+        }
+
+        d3.csv("员工名单.csv", function (error2, csvdataPerson) {
+            if (error2) {
+                console.log(error2);
+            }
+            for (var j = 0; j < csvdataPerson.length; j++) {
+                var person = {
+                    "姓名": csvdataPerson[j].姓名,
+                    "基本工资": csvdataPerson[j].基本工资,
+                    "绩效评分": csvdataPerson[j].绩效评分,
+                    "公积金": csvdataPerson[j].公积金,
+                    "绩效奖励": null,
+                    "insurances5and1": null,
+                    "incomeBeforeTax": null,
+                    "incomeAfterTax": null,
+                    "tax": null,
+                }
+                personList[j] = person;
+            }
+        });
+        d3.csv("本市职工月平均工资.csv", function (error3, csvdataSalary) {
+            if (error3) {
+                console.log(error3);
+            }
+            for (var j = 0; j < csvdataSalary.length; j++) {
+                var salary = {
+                    "本市职工月平均工资": csvdataSalary[j].本市职工月平均工资,
+                }
+                monSalary[j] = salary;
+                console.log(csvdataSalary);
+                console.log(monSalary[0].本市职工月平均工资);
+            }
+        });
+
+        function testSalary() {
+            for (var i = 0; i < salary.length; i++) {
+                console.log(salary[0].本市职工月平均工资);
+            }
+        }
+
+        d3.csv("绩效工资标准.csv", function (error4, csvdataStandard) {
+            if (error4) {
+                console.log(error4);
+            }
+            var standard = {
+                "A": csvdataStandard[0].A,
+                "B": csvdataStandard[0].B,
+                "C": csvdataStandard[0].C,
+                "D": csvdataStandard[0].D,
+            }
+            standardSalary[0] = standard;
+            console.log(csvdataStandard);
+
+
+            console.log(standardSalary);
+        });
+
+// performance
+        function calperformance(performances) {
+            console.log(performances);
+            if (performances == "A") {
+                return standardSalary[0].A;
+            } else if (performances == "B") {
+                return standardSalary[0].B;
+            } else if (performances == "C") {
+                return standardSalary[0].C;
+            } else if (performances == "D") {
+                return standardSalary[0].D;
+            }
+            else {
+                console.log("error");
+            }
+
+        }
+        var len = ul.length;
+        console.log(len);
+    console.log(personList+"index");
+        //show csv file to page as tables used parse
+        for (m = 0; m < len; m++) {
+            parseData(ul[m], displayData);
+
+            function parseData(url, callBack) {
+                Papa.parse(url, {
+                    download: true,
+                    dynamicTyping: true,
+                    complete: function (results) {
+                        callBack(results.data);
+                    }
+                });
+            }
+            console.log(ul[m]);
+            function displayData(data) {
+
+                var table = document.createElement('table');
+                table.setAttribute("class", "table");
+                var addPosition = document.getElementById('h1');
+                for (i = 0; i < data.length; i++) {
+                    var trNode = table.insertRow();
+                    var row = data[i];
+                    var cells = row.join(",").split(",");
+                    for (j = 0; j < cells.length; j++) {
+                        var tdNode = trNode.insertCell();
+                        tdNode.innerHTML += '<td>' + cells[j] + '</td>';
+                    }
+                }
+
+                addPosition.appendChild(table);
+
+            }
+    }
+
+    function changeValue(name) {
+      alert(name);
+      for(var i=0;i<personList.length;i++){
+          if(name==personList[i].姓名){
+              var salaryId="salary"+i;
+              var performanceId="performance"+i;
+              var fundId ="fund"+i;
+              var reg = new RegExp("^[0-9]*$");
+
+              if(reg.test(document.getElementById(salaryId).value)){
+                  personList[i].基本工资=document.getElementById(salaryId).value;
+              }
+
+              if(document.getElementById(performanceId).value=='A'||document.getElementById(performanceId).value=='B'||document.getElementById(performanceId).value=='C'||document.getElementById(performanceId).value=='D'){
+                  personList[i].绩效评分=document.getElementById(performanceId).value;
+
+              }
+
+              if(document.getElementById(fundId).value>0&&document.getElementById(fundId).value<=1)
+              {
+                  personList[i].公积金=document.getElementById(fundId).value;
+              }
+              $('ul').empty();
+              calAllIncome();
+              break;
+          }
+      }
+
+    }
+
+
+</script>
+</body>
+</html>
